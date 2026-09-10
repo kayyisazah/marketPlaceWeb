@@ -924,5 +924,80 @@
       closeSettingsModal();
     }
   </script>
+
+  
+<script type="module">
+  // 1. Import Firebase App & Firestore Database
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { 
+    getFirestore, 
+    collection, 
+    onSnapshot, 
+    doc, 
+    setDoc, 
+    deleteDoc 
+  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+  // 2. Konfigurasi Firebase Project Kamu
+  const firebaseConfig = {
+    apiKey: "AIzaSyC--zU7B3Xmhcv6SrMgd3jRlpP3Rumaww0",
+    authDomain: "marketplaceweb-3b28d.firebaseapp.com",
+    projectId: "marketplaceweb-3b28d",
+    storageBucket: "marketplaceweb-3b28d.firebasestorage.app",
+    messagingSenderId: "975587545077",
+    appId: "1:975587545077:web:aac2b03ea2eb2924eb5abc",
+    measurementId: "G-L1TQP59VYM"
+  };
+
+  // 3. Inisialisasi Firebase & Firestore Database
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 4. Sinkronisasi Data Realtime (Membaca Katalog dari Firestore Cloud)
+  onSnapshot(collection(db, "templates"), (snapshot) => {
+    const list = [];
+    snapshot.forEach((doc) => {
+      list.push(doc.data());
+    });
+    
+    window.templates = list;
+    if (typeof templates !== 'undefined') {
+      templates = list;
+    }
+
+    if (typeof window.renderGrid === 'function') window.renderGrid();
+    if (typeof window.updateAdminUI === 'function') window.updateAdminUI();
+  });
+
+  // 5. Fungsi Simpan Produk Baru ke Cloud Database
+  window.saveTemplatesToStorage = async function() {
+    const targetList = window.templates || (typeof templates !== 'undefined' ? templates : []);
+    for (const t of targetList) {
+      if (t && t.id) {
+        await setDoc(doc(db, "templates", String(t.id)), t);
+      }
+    }
+  };
+
+  // 6. Fungsi Hapus Produk dari Cloud Database
+  window.executeDelete = async function() {
+    const targetId = window.templateToDeleteId || (typeof templateToDeleteId !== 'undefined' ? templateToDeleteId : null);
+    if (!targetId) return;
+
+    await deleteDoc(doc(db, "templates", String(targetId)));
+
+    if (typeof window.templates !== 'undefined') {
+      window.templates = window.templates.filter(t => t.id !== targetId);
+    }
+    if (typeof templates !== 'undefined') {
+      templates = templates.filter(t => t.id !== targetId);
+    }
+
+    if (typeof window.updateAdminUI === 'function') window.updateAdminUI();
+    if (typeof window.renderGrid === 'function') window.renderGrid();
+    if (typeof window.closeDeleteModal === 'function') window.closeDeleteModal();
+    if (typeof window.showToast === 'function') window.showToast("Template telah dihapus dari cloud.");
+  };
+</script>
 </body>
 </html>
