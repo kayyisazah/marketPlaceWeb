@@ -477,26 +477,7 @@
           templates = JSON.parse(savedTemplates);
         } else {
           // Jika belum ada template sama sekali, berikan data sampel default awal
-          templates = [
-            {
-              id: "tpl_sample_1",
-              title: "Aesthetic Portfolio Canva",
-              category: "Canva",
-              price: "50.000",
-              imageUrl: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=800&auto=format&fit=crop",
-              demoUrl: "",
-              description: "SAMPEL Template presentasi & resume portofolio aesthetic warna pastel lembut. Sangat cocok untuk mahasiswa, freelancer, dan kreator konten."
-            },
-            {
-              id: "tpl_sample_2",
-              title: "Capcut Transition Velocity Template",
-              category: "Capcut",
-              price: "35.000",
-              imageUrl: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?q=80&w=800&auto=format&fit=crop",
-              demoUrl: "",
-              description: "SAMPEL Template video jedag jedug & transisi halus berdurasi 15 detik. Siap pakai untuk video TikTok & Reels Instagram."
-            }
-          ];
+          templates = [ ];
           saveTemplatesToStorage();
         }
       } catch (e) {
@@ -517,6 +498,39 @@
       // Sync footer WA
       const footerWa = document.getElementById("footerWaText");
       if (footerWa) footerWa.textContent = "+" + waNumber;
+    }
+
+    function renderTemplates() {
+      const grid = document.getElementById("templateGrid");
+      if (!grid) return;
+    
+      const filtered = getFilteredTemplates();
+    
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-12 px-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+            <p class="text-gray-600 font-medium text-lg mb-2">Belum ada template yang tersedia saat ini.</p>
+            <p class="text-gray-500 text-sm mb-4">Silakan hubungi admin untuk informasi lebih lanjut mengenai ketersediaan template.</p>
+            <a href="https://wa.me/${waNumber}" target="_blank" class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition">
+              Hubungi Admin Via WhatsApp
+            </a>
+          </div>
+        `;
+        return;
+      }
+        grid.innerHTML = filtered.map(tpl => `
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition">
+            <img src="${tpl.image}" alt="${tpl.title}" class="w-full h-48 object-cover">
+            <div class="p-4">
+              <h3 class="font-bold text-gray-800 text-lg mb-1">${tpl.title}</h3>
+              <p class="text-xs text-gray-500 mb-2">${tpl.category}</p>
+              <p class="text-pink-600 font-bold mb-4">Rp ${Number(tpl.price).toLocaleString('id-ID')}</p>
+              <a href="https://wa.me/${waNumber}?text=Halo%20Admin,%20saya%20tertarik%20dengan%20template%20${encodeURIComponent(tpl.title)}" target="_blank" class="block text-center bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 rounded-lg text-sm transition">
+                Beli Template
+              </a>
+            </div>
+          </div>
+        `).join('');
     }
 
     function saveTemplatesToStorage() {
